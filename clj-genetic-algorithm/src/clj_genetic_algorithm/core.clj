@@ -76,14 +76,22 @@
   (map #(assoc {} :genome % :fitness (evaluate-genome %)) (map #(:genome %) (build-population))))
 
 (defn evolve [population] 
-  (let [p evaluate-population
+  (let [p (evaluate-population population)
         max-fitness (max-population-fitness p)
         avg-fitness (avg-population-fitness p)]
-		    	
-     
-    
-    
- p   
+		; retrieve pairs and reproduce them
+  		(for [x (range 0 (count population) 2) ]
+      		(let [child-1 (nth population x)
+              	  child-2 (nth population (+ x 1))
+                  parent-1 (select-parent population max-fitness min-fitness 0)
+                  parent-2 (select-parent population max-fitness min-fitness 0)
+                  progeny (reproduce (:genome parent-1) (:genome parent-2))
+                  ]
+     			  (list (assoc {:fitness (:fitness child-1)} :genome (first progeny))
+               			(assoc {:fitness (:fitness child-1)} :genome (first progeny)))			
+     		)	
+       )  	
+ 
  ))
 
 ; selectes a parent at random based on the proability related to fitness
@@ -92,7 +100,9 @@
 (defn select-parent [population max-fitness min-fitness breaker] 
   (let [candidate-genome (rand-nth population)
         candidate-fitness (:fitness candidate-genome)
-        selection-probability (/ candidate-fitness max-fitness)
+        selection-probability (if (= max-fitness 0) 
+                                0 
+                                (/ candidate-fitness max-fitness))
         max-tie-breaker 100]   	
      	(if (= breaker max-tie-breaker)
      		(rand-nth population)
